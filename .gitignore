@@ -1,0 +1,11 @@
+﻿node_modules/
+.env
+*.log
+
+# uploads (if runtime)
+public/assets/uploads/
+uploads/
+
+# databases (pick what you want)
+*.sqlite
+*.db

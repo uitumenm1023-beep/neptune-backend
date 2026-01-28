@@ -17,32 +17,72 @@ seedAdmin();
 
 const app = express();
 
+/* =========================
+   PRODUCTION SETTINGS
+========================= */
+const IS_PROD = process.env.NODE_ENV === "production";
+
+// ✅ Put your Netlify URL here (and any custom domain later)
+const ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://localhost:8080",
+  "http://127.0.0.1:5500",
+  "https://neptune-store.netlify.app",
+];
+
+// ✅ Render is behind a proxy. Needed so secure cookies work.
+app.set("trust proxy", 1);
+
 /* ---------- middleware (ORDER MATTERS) ---------- */
 
-// ✅ Allow cookies (sessions) to work from your frontend
+// ✅ CORS: do NOT use origin:true in production
 app.use(
   cors({
-    origin: true,          // reflects request origin (fine for local dev)
-    credentials: true,     // ✅ allow cookies
+    origin: (origin, cb) => {
+      // allow non-browser requests (curl, server-to-server)
+      if (!origin) return cb(null, true);
+
+      if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+
+      return cb(new Error(`CORS blocked for origin: ${origin}`));
+    },
+    credentials: true,
   })
 );
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Session MUST be before routes that need auth
+
+app.use(
+  "/assets/uploads",
+  express.static(path.join(__dirname, "../../public/assets/uploads"))
+);
+
+
+// ✅ sessions
 app.use(
   session({
-    secret: "dev_secret_change_later",
+    secret: process.env.SESSION_SECRET || "dev_secret_change_later",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      sameSite: "lax",     // good for same-site navigation
+      httpOnly: true,
+
+      // IMPORTANT:
+      // - If your frontend and backend are on different domains (Netlify + Render),
+      //   cookies must be SameSite=None; Secure=true
+      sameSite: IS_PROD ? "none" : "lax",
+      secure: IS_PROD, // requires HTTPS (Netlify/Render are HTTPS)
     },
   })
 );
 
-/* ---------- static frontend ---------- */
+/* ---------- static frontend (optional) ----------
+   If you deploy frontend separately on Netlify,
+   you can keep this OR remove it — it won’t hurt.
+*/
 app.use(express.static(path.join(__dirname, "../../public")));
 
 /* ---------- API routes ---------- */
@@ -58,7 +98,7 @@ app.get("/api/health", (req, res) => {
 });
 
 /* ---------- start server ---------- */
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

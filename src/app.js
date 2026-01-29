@@ -23,14 +23,11 @@ const app = express();
 ========================= */
 const IS_PROD = process.env.NODE_ENV === "production";
 
-// ✅ Allowed frontends
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:5173",
   "http://localhost:8080",
   "http://127.0.0.1:5500",
-
-  // Netlify prod + previews
   "https://neptune-store.netlify.app",
   "https://genuine-liger-891219.netlify.app",
 ];
@@ -39,10 +36,10 @@ const ALLOWED_ORIGINS = [
 app.set("trust proxy", 1);
 
 /* =========================
-   MIDDLEWARE (ORDER MATTERS)
+   MIDDLEWARE
 ========================= */
 
-// ✅ CORS (cookies + Netlify)
+// ✅ CORS (NO app.options("*") — that breaks Node 22)
 app.use(
   cors({
     origin: (origin, cb) => {
@@ -61,28 +58,15 @@ app.use(
   })
 );
 
-// preflight support
-app.options("*", cors({ credentials: true, origin: true }));
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 /* =========================
-   STATIC FILES (CRITICAL)
+   STATIC FILES
 ========================= */
 
-// ✅ Serve EVERYTHING in /public
-// This enables:
-// /assets/brands/*
-// /assets/about/*
-// /assets/uploads/*
+// Serve ALL public assets
 app.use(express.static(path.join(process.cwd(), "public")));
-
-// Explicit uploads (optional but safe)
-app.use(
-  "/assets/uploads",
-  express.static(path.join(process.cwd(), "public", "assets", "uploads"))
-);
 
 /* =========================
    SESSIONS
@@ -121,5 +105,5 @@ app.get("/api/health", (req, res) => {
 ========================= */
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log("Server running on port", PORT);
 });

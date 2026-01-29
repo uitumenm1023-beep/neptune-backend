@@ -1,4 +1,8 @@
 // public/js/index.js
+window.__INDEX_LOADED__ = true;
+alert("index.js updated and running ✅");
+
+
 
 /* =========================
    DRAWER MENU (OFFCANVAS)
@@ -30,29 +34,68 @@ document.addEventListener("keydown", (e) => {
 
 
 /* =========================
-   SPLINE INTRO: SHOW AT TOP, HIDE WHEN SCROLLED DOWN
+   SPLINE INTRO
+========================= */
+/* =========================
+   SPLINE INTRO: ENTER TO CONTINUE
+   Hide on: click/tap, wheel, touch, keydown, or scroll
 ========================= */
 const intro = document.getElementById("splineIntro");
 const scrollHint = intro?.querySelector(".scrollHint");
 
-function updateIntro() {
-  const atTop = window.scrollY <= 10;
+function hideIntro() {
+  if (!intro) return;
 
-  // If at top => show intro, else hide intro
-  document.body.classList.toggle("intro-hidden", !atTop);
+  // Hide the whole overlay
+  intro.style.display = "none";
 
-  // optional: hide hint once they start scrolling
-  if (!atTop) scrollHint?.classList.add("hide");
-  else scrollHint?.classList.remove("hide");
+  // Make sure it can never block interaction
+  intro.style.pointerEvents = "none";
 }
 
-window.addEventListener("scroll", updateIntro, { passive: true });
-window.addEventListener("load", updateIntro);
-updateIntro();
+function showIntro() {
+  if (!intro) return;
+  intro.style.display = "";
+  intro.style.pointerEvents = "";
+}
+
+// show on load (optional)
+window.addEventListener("load", () => {
+  showIntro();
+
+  // If page loads not at top, don’t show it
+  if (window.scrollY > 5) hideIntro();
+});
+
+// Hide on ANY “intent to continue”
+function onEnter() {
+  hideIntro();
+  cleanup();
+}
+
+function cleanup() {
+  window.removeEventListener("scroll", onEnter);
+  window.removeEventListener("wheel", onEnter, { passive: true });
+  window.removeEventListener("touchstart", onEnter, { passive: true });
+  document.removeEventListener("keydown", onKey);
+  intro?.removeEventListener("click", onEnter);
+}
+
+function onKey(e) {
+  // Any key can dismiss, or restrict to Enter/Space if you want
+  if (e.key === "Enter" || e.key === " " || e.key === "Escape") onEnter();
+}
+
+// These cover desktop + mobile even if no scroll happens
+window.addEventListener("scroll", onEnter, { passive: true });
+window.addEventListener("wheel", onEnter, { passive: true });
+window.addEventListener("touchstart", onEnter, { passive: true });
+document.addEventListener("keydown", onKey);
+intro?.addEventListener("click", onEnter);
 
 
 /* =========================
-   SCROLL REVEAL ANIMATIONS
+   SCROLL REVEAL
 ========================= */
 const revealEls = document.querySelectorAll(".reveal");
 const observer = new IntersectionObserver(
@@ -85,6 +128,13 @@ function esc(s) {
     .replaceAll("'", "&#039;");
 }
 
+// ✅ convert backend image paths to absolute URLs
+function toAbsUrl(url) {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return API_BASE + url;
+}
+
 let items = [];
 let index = 0;
 
@@ -92,7 +142,7 @@ function slideWidthWithGap() {
   const first = track?.querySelector(".bs-card");
   if (!first) return 0;
   const w = first.getBoundingClientRect().width;
-  const gap = 18; // match CSS gap in .slider-track (you set 18 later)
+  const gap = 18;
   return w + gap;
 }
 
@@ -122,8 +172,7 @@ function updateButtons() {
 function applyTranslate() {
   if (!track) return;
   const one = slideWidthWithGap();
-  const x = one * index;
-  track.style.transform = `translateX(${-x}px)`;
+  track.style.transform = `translateX(${-one * index}px)`;
   updateButtons();
 }
 
@@ -131,14 +180,14 @@ function renderSlider() {
   if (!track) return;
 
   track.innerHTML = items.map((p) => {
-    const img = p.image_url ? esc(p.image_url) : "/assets/hero.jpg";
+    const img = toAbsUrl(p.image_url);
     const title = esc(p.title || "Product");
     const cat = esc(p.category || "Uncategorized");
 
     return `
       <a class="bs-card" href="/product.html?id=${p.id}">
         <div class="bs-media">
-          <img src="${img}" alt="${title}" loading="lazy" />
+          <img src="${esc(img)}" alt="${title}" loading="lazy" />
           <div class="bs-grad"></div>
           ${p.is_featured ? `<div class="bs-tag">Bestseller</div>` : ``}
         </div>
@@ -173,7 +222,6 @@ window.addEventListener("resize", () => {
   applyTranslate();
 });
 
-// search: Enter sends user to shop.html?q=...
 qHome?.addEventListener("keydown", (e) => {
   if (e.key !== "Enter") return;
   const term = qHome.value.trim();

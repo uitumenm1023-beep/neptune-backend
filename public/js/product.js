@@ -1,6 +1,40 @@
 // public/js/product.js
-const API_BASE = "https://neptune-backend.onrender.com"; // <-- CHANGE THIS
+// Frontend → Netlify
+// Backend → Render
 
+
+
+// ------------------ helpers ------------------
+function dollars(cents) {
+  return (Number(cents) / 100).toFixed(2);
+}
+
+function esc(s) {
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function toAbsUrl(url) {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return API_BASE + url;
+}
+
+function setMsg(t) {
+  msg.textContent = t || "";
+}
+
+function refreshCartCount() {
+  if (cartCountEl && typeof window.cartCountNumber === "function") {
+    cartCountEl.textContent = String(window.cartCountNumber());
+  }
+}
+
+// ------------------ dom ------------------
 const params = new URLSearchParams(location.search);
 const id = params.get("id");
 
@@ -22,51 +56,48 @@ const cartCountEl = document.getElementById("cartCount");
 
 let selectedSize = "";
 
-function dollars(cents){ return (Number(cents)/100).toFixed(2); }
-function esc(s){
-  return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
-}
-
-function toAbsUrl(url){
-  if (!url) return "";
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  return API_BASE + url;
-}
-
-function setMsg(t){ msg.textContent = t || ""; }
-function refreshCartCount(){
-  if (cartCountEl && typeof window.cartCountNumber === "function") {
-    cartCountEl.textContent = String(window.cartCountNumber());
-  }
-}
-
-function renderMainImage(url, title){
+// ------------------ rendering ------------------
+function renderMainImage(url, title) {
   if (!url) {
-    imgThumb.textContent = "No Image";
+    imgThumb.innerHTML = `<div style="padding:1rem">No image</div>`;
     return;
   }
-  imgThumb.innerHTML = `<img src="${esc(url)}" alt="${esc(title || "Product")}" style="width:100%;height:100%;object-fit:contain" />`;
+
+  imgThumb.innerHTML = `
+    <img
+      src="${esc(url)}"
+      alt="${esc(title || "Product")}"
+      style="width:100%;height:100%;object-fit:contain"
+      loading="eager"
+    />
+  `;
 }
 
-function renderThumbs(images, title){
+function renderThumbs(images, title) {
   thumbsEl.innerHTML = "";
+
   images.forEach((url) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "thumb-btn";
-    b.innerHTML = `<img src="${esc(url)}" alt="${esc(title || "Product")}" loading="lazy" />`;
-    b.addEventListener("click", () => renderMainImage(url, title));
-    thumbsEl.appendChild(b);
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "thumb-btn";
+    btn.innerHTML = `
+      <img
+        src="${esc(url)}"
+        alt="${esc(title || "Product")}"
+        loading="lazy"
+      />
+    `;
+    btn.addEventListener("click", () => renderMainImage(url, title));
+    thumbsEl.appendChild(btn);
   });
 }
 
-function renderSizePills(sizes){
+function renderSizePills(sizes) {
   sizePills.innerHTML = "";
   selectedSize = "";
 
   if (!sizes || !sizes.length) {
-    sizeHint.textContent = "No size";
+    sizeHint.textContent = "One size";
     const pill = document.createElement("button");
     pill.type = "button";
     pill.className = "size-pill disabled";
@@ -76,50 +107,58 @@ function renderSizePills(sizes){
     return;
   }
 
-  sizeHint.textContent = "Select one";
+  sizeHint.textContent = "Select a size";
 
-  for (const s of sizes) {
+  sizes.forEach((s) => {
     const pill = document.createElement("button");
     pill.type = "button";
     pill.className = "size-pill";
     pill.textContent = s;
 
     pill.addEventListener("click", () => {
-      [...sizePills.querySelectorAll(".size-pill")].forEach(el => el.classList.remove("active"));
+      [...sizePills.querySelectorAll(".size-pill")]
+        .forEach(el => el.classList.remove("active"));
+
       pill.classList.add("active");
       selectedSize = s;
-      setMsg("");
       sizeHint.textContent = `Selected: ${s}`;
+      setMsg("");
     });
 
     sizePills.appendChild(pill);
-  }
+  });
 }
 
-(async function init(){
+// ------------------ init ------------------
+(async function init() {
   refreshCartCount();
 
   if (!id) {
     titleEl.textContent = "Missing product id";
-    setMsg("Open like: /product.html?id=1");
+    setMsg("Open like: product.html?id=1");
     addBtn.disabled = true;
     return;
   }
 
   try {
-    const p = await api(`/api/products/${id}`);
+    const res = await fetch(`${API_BASE}/api/products/${id}`);
+    if (!res.ok) throw new Error("Failed to load product");
+
+    const p = await res.json();
 
     titleEl.textContent = p.title || "Untitled";
     catEl.textContent = p.category || "Uncategorized";
     priceEl.textContent = `$${dollars(p.price_cents || 0)}`;
     descEl.textContent = p.description || "";
 
-    // ✅ convert all image urls to absolute backend urls
+    // normalize image sources
     const rawImages = Array.isArray(p.images)
       ? p.images
       : (p.image_url ? [p.image_url] : []);
 
-    const images = rawImages.map(toAbsUrl).filter(Boolean);
+    const images = rawImages
+      .map(toAbsUrl)
+      .filter(Boolean);
 
     renderMainImage(images[0], p.title);
     renderThumbs(images, p.title);
@@ -127,21 +166,20 @@ function renderSizePills(sizes){
     const sizes = Array.isArray(p.sizes) ? p.sizes : [];
     renderSizePills(sizes);
 
-    addBtn.addEventListener("click", () => {
+    addBtn.onclick = () => {
       setMsg("");
 
       if (typeof window.cartAdd !== "function") {
-        setMsg("Cart not loaded. Make sure cart.js is included before product.js");
+        setMsg("Cart not loaded.");
+        return;
+      }
+
+      if (sizes.length && !selectedSize) {
+        setMsg("Please select a size.");
         return;
       }
 
       const qty = Math.max(1, Number(qtyEl.value || 1));
-      const needsSize = sizes.length > 0;
-
-      if (needsSize && !selectedSize) {
-        setMsg("Please select a size.");
-        return;
-      }
 
       window.cartAdd({
         id: p.id,
@@ -153,7 +191,7 @@ function renderSizePills(sizes){
 
       refreshCartCount();
       setMsg("Added to cart ✅");
-    });
+    };
 
   } catch (err) {
     console.error(err);

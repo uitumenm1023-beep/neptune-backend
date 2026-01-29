@@ -2434,3 +2434,17 @@ body.intro-hidden #splineIntro{
     gap: 18px;
   }
 }
+
+
+
+.product-card{
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.product-card:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 18px 45px rgba(0,0,0,.12);
+}
+
+
+#splineIntro { cursor: pointer; }

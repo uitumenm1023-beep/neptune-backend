@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Product</title>
+  <link rel="stylesheet" href="./css/main.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/index.html">NEPTUNE</a>
+
+      <div class="nav-right">
+        <a class="icon-btn" href="/shop.html" title="Catalog">☰</a>
+        <a class="icon-btn" href="/cart.html" title="Cart">🛒</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding:22px 0 54px;">
+    <a class="sub" href="/shop.html">← Back to catalog</a>
+
+    <section class="product-3col">
+      <!-- LEFT: description -->
+      <aside class="p-left">
+        <div class="p-kicker" id="category"></div>
+        <h1 class="p-title-big" id="title">Loading...</h1>
+
+        <div class="p-desc" id="desc"></div>
+      </aside>
+
+      <!-- MIDDLE: product image -->
+      <section class="p-mid">
+        <div class="p-image" id="imgThumb"></div>
+        <div id="thumbs" class="thumbs"></div>
+      </section>
+
+      <!-- RIGHT: purchase -->
+      <aside class="p-right">
+        <div class="p-price" id="price"></div>
+
+        <div class="p-block">
+          <div class="p-row">
+            <div class="p-label">Size</div>
+            <div class="p-hint" id="sizeHint"></div>
+          </div>
+          <div id="sizePills" class="size-pills"></div>
+        </div>
+
+        <div class="p-block">
+          <div class="p-label">Quantity</div>
+          <input id="qty" type="number" min="1" value="1" />
+        </div>
+
+        <div class="p-actions">
+          <button id="addBtn" class="btn primary" type="button">Add to cart</button>
+          <a class="btn" href="/cart.html">Go to cart</a>
+        </div>
+
+        <p id="msg" class="sub" style="margin-top:10px;"></p>
+        <div class="sub" style="margin-top:10px;">Cart: <b id="cartCount">0</b></div>
+      </aside>
+    </section>
+  </main>
+
+  <script src="./js/api.js"></script>
+  <script src="./js/cart.js"></script>
+  <script src="./js/product.js"></script>
+</body>
+</html>

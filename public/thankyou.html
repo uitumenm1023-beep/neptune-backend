@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Thank you</title>
+  <link rel="stylesheet" href="./css/main.css" />
+</head>
+<body>
+  <main class="container" style="margin-top:40px;">
+    <div class="card" style="padding:18px;">
+      <h1 style="margin:0 0 8px;">Order placed </h1>
+      <p class="sub">Your order id: <b id="oid"></b></p>
+      <a class="btn primary" href="/shop.html">Back to shop</a>
+    </div>
+  </main>
+
+  <script>
+    const id = new URLSearchParams(location.search).get("orderId") || "—";
+    document.getElementById("oid").textContent = id;
+  </script>
+</body>
+</html>

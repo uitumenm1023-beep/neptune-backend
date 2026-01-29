@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Shop</title>
+  <link rel="stylesheet" href="./css/main.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/shop.html">NEPTUNE STORE</a>
+      <div class="controls">
+        <input id="q" placeholder="Search products..." />
+        <a class="btn" href="/index.html">Home</a>
+        <a class="btn" href="/cart.html">Cart (<span id="cartCount">0</span>)</a>
+        <a class="btn" href="/admin/login.html">Admin</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1 style="margin:8px 0 12px;">Shop</h1>
+    <div id="grid" class="grid"></div>
+    <p id="empty" class="sub" style="display:none; margin-top:16px;">No products found.</p>
+  </main>
+
+  <script src="./js/api.js"></script>
+  <script src="./js/cart.js"></script>
+  <script src="./js/cartBadge.js"></script>
+  <script src="./js/shop.js"></script>
+
+</body>
+</html>

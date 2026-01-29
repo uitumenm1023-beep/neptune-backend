@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin · Categories</title>
+  <link rel="stylesheet" href="../css/admin.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Categories</h1>
+    <nav class="topbar-actions">
+      <a class="link" href="/index.html">Home</a>
+      <a class="link" href="/shop.html">Store</a>
+      <a class="link" href="./products.html">Products</a>
+      <a class="link" href="./categories.html">Categories</a>
+      <a class="link" href="./orders.html">Orders</a>
+      <button id="logoutBtn" class="ghost">Logout</button>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="card">
+      <h2>Add category</h2>
+      <form id="catForm" class="grid">
+        <label class="full">
+          Name
+          <input name="name" placeholder="Shoes" required />
+        </label>
+        <div class="full row">
+          <button type="submit">Create</button>
+          <p id="msg" class="msg"></p>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>All categories</h2>
+      <div id="list" class="list"></div>
+    </section>
+  </main>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/admin/categories.js"></script>
+</body>
+</html>

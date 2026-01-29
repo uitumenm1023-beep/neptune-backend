@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NEPTUNE</title>
+  <link rel="stylesheet" href="./css/main.css" />
+
+  <!-- Spline viewer (load ONCE) -->
+  <script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.39/build/spline-viewer.js"></script>
+</head>
+
+<body>
+
+  <!-- OFFCANVAS MENU BUTTON -->
+  <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false">☰</button>
+
+  <!-- OVERLAY -->
+  <div class="overlay" id="overlay" aria-hidden="true"></div>
+
+  <!-- DRAWER -->
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-top">
+      <div class="drawer-title">Menu</div>
+      <button class="drawer-close" id="closeDrawer" aria-label="Close menu">✕</button>
+    </div>
+
+    <nav class="drawer-links">
+      <a href="/shop.html">Catalog</a>
+      <a href="/shop.html?cat=Shoes">Shoes</a>
+      <a href="/shop.html?cat=Hoodie">Hoodies</a>
+      <a href="/shop.html?cat=Pants">Pants</a>
+      <a href="/shop.html?cat=Jacket">Jackets</a>
+      <a href="/shop.html?cat=Accessories">Accessories</a>
+
+      <div class="drawer-sep"></div>
+
+      <a href="/about.html">About</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </aside>
+
+  <!-- SPLINE INTRO (fixed fullscreen, doesn't scroll away with page content) -->
+  <section id="splineIntro" class="spline-intro">
+    <spline-viewer
+      class="spline-viewer"
+      url="https://prod.spline.design/pIqIQhLee1m10ER3/scene.splinecode">
+    </spline-viewer>
+
+    <div class="scrollHint">Scroll to enter ↓</div>
+  </section>
+
+  <!-- EVERYTHING BELOW IS YOUR NORMAL HOMEPAGE -->
+  <div id="page">
+
+    <header class="nav">
+      <div class="container nav-inner">
+        <a class="brand" href="/index.html">NEPTUNE</a>
+
+        <nav class="nav-links">
+          <a href="/shop.html">Catalog</a>
+          <a href="/about.html">About</a>
+          <a href="/contact.html">Contacts</a>
+        </nav>
+
+        <div class="nav-right">
+          <div class="search">
+            <span style="font-size:12px;color:var(--muted)">⌕</span>
+            <input id="qHome" placeholder="Search" />
+          </div>
+          <a class="icon-btn" href="/cart.html" title="Cart">⧉</a>
+          <a class="icon-btn" href="/admin/login.html" title="Admin">⌘</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- BRAND LOGOS -->
+    <section class="brand-strip reveal">
+      <div class="brand-strip-inner">
+        <img src="assets/brands/nike.jpg" alt="Nike" loading="lazy">
+        <img src="assets/brands/adidias.jpg" alt="Adidas" loading="lazy">
+        <img src="assets/brands/puma.jpg" alt="Puma" loading="lazy">
+        <img src="assets/brands/nb.jpg" alt="New Balance" loading="lazy">
+      </div>
+    </section>
+
+    <main class="container" style="padding:24px 0 40px;">
+
+      <!-- HERO -->
+      <section class="hero reveal from-left">
+        <div class="hero-left">
+          <h1>NEPTUNE<br/>WEAR</h1>
+          <p class="sub">
+            Minimal essentials. Clean cuts, premium comfort, and timeless silhouettes.
+          </p>
+          <div class="hero-actions">
+            <a class="btn primary" href="/shop.html">To catalog</a>
+            <a class="btn" href="#bestsellers">Bestsellers</a>
+          </div>
+        </div>
+
+        <div class="hero-right">
+          <img src="/assets/hero.jpg" alt="Hero" />
+          <div class="hero-badge">New Drop</div>
+        </div>
+      </section>
+
+      <!-- COLLECTION SPLIT -->
+      <section class="split reveal from-right">
+        <a class="split-card" href="/shop.html">
+          <img src="/assets/collection-left.jpg" alt="Collection left" />
+          <div class="split-overlay">
+            <div class="big">Summer Collection</div>
+            <div class="small">2026</div>
+          </div>
+        </a>
+
+        <a class="split-card" href="/shop.html">
+          <img src="/assets/collection-right.jpg" alt="Collection right" />
+          <div class="split-overlay">
+            <div class="big">Essentials</div>
+            <div class="small">Daily wear</div>
+          </div>
+        </a>
+      </section>
+
+      <!-- MARQUEE -->
+      <section class="marquee reveal">
+        <div class="marquee-track">
+          <span>NEW DROP</span>
+          <span>MINIMAL DESIGN</span>
+          <span>PREMIUM QUALITY</span>
+          <span>FAST SHIPPING</span>
+          <span>EVERYDAY ESSENTIALS</span>
+          <span>NEW DROP</span>
+          <span>MINIMAL DESIGN</span>
+          <span>PREMIUM QUALITY</span>
+          <span>FAST SHIPPING</span>
+          <span>EVERYDAY ESSENTIALS</span>
+        </div>
+      </section>
+
+      <!-- CATEGORY WALL -->
+      <section class="catwall reveal">
+        <a class="catcard" href="/shop.html?cat=Shoes" style="--img:url('/assets/categories/shoes.jpg')">
+          <div class="catcard-num">1</div>
+          <div class="catcard-bottom">
+            <div class="pill">CATEGORY</div>
+            <div class="catcard-title">Shoes</div>
+          </div>
+        </a>
+
+        <a class="catcard" href="/shop.html?cat=Hoodie" style="--img:url('/assets/categories/hoodie.jpg')">
+          <div class="catcard-num">2</div>
+          <div class="catcard-bottom">
+            <div class="pill">CATEGORY</div>
+            <div class="catcard-title">Hoodies</div>
+          </div>
+        </a>
+
+        <a class="catcard" href="/shop.html?cat=Pants" style="--img:url('/assets/categories/pants.jpg')">
+          <div class="catcard-num">3</div>
+          <div class="catcard-bottom">
+            <div class="pill">CATEGORY</div>
+            <div class="catcard-title">Pants</div>
+          </div>
+        </a>
+
+        <a class="catcard" href="/shop.html?cat=Jacket" style="--img:url('/assets/categories/jacket.jpg')">
+          <div class="catcard-num">4</div>
+          <div class="catcard-bottom">
+            <div class="pill">CATEGORY</div>
+            <div class="catcard-title">Jackets</div>
+          </div>
+        </a>
+      </section>
+
+      <!-- BESTSELLERS HEADER -->
+      <div id="bestsellers" class="section-title reveal">
+        <h2>Bestsellers</h2>
+        <a class="btn" href="/shop.html">To catalog</a>
+      </div>
+
+      <!-- SLIDER -->
+      <section class="slider-wrap reveal from-right">
+        <button class="slider-btn" id="prevBtn" type="button" aria-label="Previous">‹</button>
+
+        <div class="slider" id="slider">
+          <div class="slider-track" id="track"></div>
+        </div>
+
+        <button class="slider-btn" id="nextBtn" type="button" aria-label="Next">›</button>
+      </section>
+
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div>
+          <h3 class="footer-brand">NEPTUNE</h3>
+          <p class="sub">
+            Minimal fashion essentials.<br />
+            Designed for everyday confidence.
+          </p>
+        </div>
+
+        <div>
+          <h4>Contact</h4>
+          <ul class="footer-list">
+            <li>Email: contact@neptune.store</li>
+            <li>Phone: +976 99 99 99 99</li>
+            <li>Ulaanbaatar, Mongolia</li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Links</h4>
+          <ul class="footer-list">
+            <li><a href="/shop.html">Shop</a></li>
+            <li><a href="/cart.html">Cart</a></li>
+            <li><a href="/admin/login.html">Admin</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Follow</h4>
+          <div class="footer-social">
+            <a href="#">Instagram</a>
+            <a href="#">Facebook</a>
+            <a href="#">TikTok</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 NEPTUNE. All rights reserved.</span>
+        <span>Built by Munkhdul U</span>
+      </div>
+    </footer>
+
+  </div><!-- /#page -->
+
+  <script src="./js/api.js"></script>
+  <script src="./js/index.js"></script>
+</body>
+</html>

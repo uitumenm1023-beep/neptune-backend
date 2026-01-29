@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Login</title>
+  <link rel="stylesheet" href="../css/admin.css" />
+</head>
+<body>
+  <main class="card">
+    <h1>Admin</h1>
+    <p class="muted">Sign in to manage products</p>
+
+    <form id="loginForm">
+      <label>
+        Username
+        <input name="username" autocomplete="username" required />
+      </label>
+
+      <label>
+        Password
+        <input name="password" type="password" autocomplete="current-password" required />
+      </label>
+
+      <button type="submit">Login</button>
+      <p id="msg" class="msg"></p>
+    </form>
+  </main>
+  <script src="../js/api.js"></script>
+  <script src="../js/admin/auth.js"></script>
+</body>
+</html>

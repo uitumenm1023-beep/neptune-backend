@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin · Products</title>
+  <link rel="stylesheet" href="../css/admin.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Products</h1>
+    <nav class="topbar-actions">
+      <a class="link" href="/index.html">Home</a>
+      <a class="link" href="/shop.html">Store</a>
+      <a class="link" href="./products.html">Products</a>
+      <a class="link" href="./categories.html">Categories</a>
+      <a class="link" href="./orders.html">Orders</a>
+      <button id="logoutBtn" class="ghost" type="button">Logout</button>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="card">
+      <h2>Add product</h2>
+
+      <form id="productForm" class="grid">
+        <label>
+          Title
+          <input name="title" required />
+        </label>
+
+        <label>
+          Price (USD)
+          <input name="price" type="number" step="0.01" min="0" required />
+        </label>
+
+        <label>
+          Category
+          <select name="category_id" id="categorySelect">
+            <option value="">Uncategorized</option>
+          </select>
+        </label>
+
+        <label>
+          Featured
+          <select name="is_featured">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </label>
+
+        <!-- SIZES -->
+        <label class="full">
+          Sizes (comma separated)
+          <input id="sizesInput" placeholder="S, M, L, XL   or   40, 41, 42, 43" />
+        </label>
+
+        <!-- MAIN IMAGE -->
+        <label class="full">
+          Main Image (auto upload)
+          <input id="imageFile" type="file" accept="image/*" />
+        </label>
+        <div class="full row">
+          <button id="uploadBtn" type="button" class="ghost">Upload</button>
+          <span class="sub" id="uploadStatus"></span>
+        </div>
+
+        <!-- EXTRA IMAGE 2 -->
+        <label class="full">
+          Extra Image 2 (auto upload)
+          <input id="imageFile2" type="file" accept="image/*" />
+        </label>
+        <div class="full row">
+          <button id="uploadBtn2" type="button" class="ghost">Upload</button>
+          <span class="sub" id="uploadStatus2"></span>
+        </div>
+
+        <!-- EXTRA IMAGE 3 -->
+        <label class="full">
+          Extra Image 3 (auto upload)
+          <input id="imageFile3" type="file" accept="image/*" />
+        </label>
+        <div class="full row">
+          <button id="uploadBtn3" type="button" class="ghost">Upload</button>
+          <span class="sub" id="uploadStatus3"></span>
+        </div>
+
+        <!-- AUTO FILLED URL (MAIN) -->
+        <label class="full">
+          Main Image URL (auto-filled)
+          <input name="image_url" placeholder="/assets/uploads/..." readonly />
+        </label>
+
+        <label class="full">
+          Description (optional)
+          <textarea name="description" rows="3"></textarea>
+        </label>
+
+        <div class="full row">
+          <button type="submit">Create</button>
+          <p id="msg" class="msg"></p>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>All products</h2>
+      <div id="list" class="list"></div>
+    </section>
+  </main>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/admin/products.js"></script>
+</body>
+</html>

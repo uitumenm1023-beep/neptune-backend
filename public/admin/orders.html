@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin · Orders</title>
+  <link rel="stylesheet" href="../css/admin.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Orders</h1>
+    <nav class="topbar-actions">
+      <a class="link" href="/index.html">Home</a>
+      <a class="link" href="/shop.html">Store</a>
+      <a class="link" href="./products.html">Products</a>
+      <a class="link" href="./categories.html">Categories</a>
+      <a class="link active" href="./orders.html">Orders</a>
+      <button id="logoutBtn" class="ghost" type="button">Logout</button>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="card">
+      <h2>All Orders</h2>
+      <div id="orders" class="list"></div>
+    </section>
+  </main>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/admin/orders.js"></script>
+</body>
+</html>

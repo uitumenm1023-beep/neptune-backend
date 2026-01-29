@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Checkout</title>
+  <link rel="stylesheet" href="./css/main.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/shop.html">NOVA STORE</a>
+      <div class="controls">
+        <a class="btn" href="/cart.html">Back to cart</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1 style="margin:8px 0 12px;">Checkout</h1>
+
+    <div class="card" style="padding:16px;">
+      <p class="sub">Total: <b id="total">$0.00</b></p>
+
+      <form id="form" class="grid" style="margin-top:10px;">
+        <label class="full">
+          Name
+          <input name="customer_name" required />
+        </label>
+
+        <label class="full">
+          Phone
+          <input name="phone" required />
+        </label>
+
+        <label class="full">
+          Address
+          <textarea name="address" rows="3" required></textarea>
+        </label>
+
+        <div class="full row">
+          <button class="btn primary" type="submit">Place order</button>
+          <p id="msg" class="msg"></p>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="./js/api.js"></script>
+  <script src="./js/cart.js"></script>
+  <script src="./js/checkout.js"></script>
+</body>
+</html>

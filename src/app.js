@@ -1,3 +1,4 @@
+// src/app.js
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
@@ -18,50 +19,74 @@ seedAdmin();
 const app = express();
 
 /* =========================
-   PRODUCTION SETTINGS
+   ENV / SETTINGS
 ========================= */
 const IS_PROD = process.env.NODE_ENV === "production";
 
-// ✅ Put your Netlify URL here (and any custom domain later)
+// ✅ Allowed frontends
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:5173",
   "http://localhost:8080",
   "http://127.0.0.1:5500",
+
+  // Netlify prod + previews
   "https://neptune-store.netlify.app",
+  "https://genuine-liger-891219.netlify.app",
 ];
 
-// ✅ Render is behind a proxy. Needed so secure cookies work.
+// Render is behind a proxy
 app.set("trust proxy", 1);
 
-/* ---------- middleware (ORDER MATTERS) ---------- */
+/* =========================
+   MIDDLEWARE (ORDER MATTERS)
+========================= */
 
-// ✅ CORS: do NOT use origin:true in production
+// ✅ CORS (cookies + Netlify)
 app.use(
   cors({
     origin: (origin, cb) => {
-      // allow non-browser requests (curl, server-to-server)
       if (!origin) return cb(null, true);
 
       if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
 
-      return cb(new Error(`CORS blocked for origin: ${origin}`));
+      // allow any Netlify preview domain
+      if (/^https:\/\/[a-z0-9-]+\.netlify\.app$/.test(origin)) {
+        return cb(null, true);
+      }
+
+      return cb(new Error(`CORS blocked: ${origin}`));
     },
     credentials: true,
   })
 );
 
+// preflight support
+app.options("*", cors({ credentials: true, origin: true }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+/* =========================
+   STATIC FILES (CRITICAL)
+========================= */
 
+// ✅ Serve EVERYTHING in /public
+// This enables:
+// /assets/brands/*
+// /assets/about/*
+// /assets/uploads/*
+app.use(express.static(path.join(process.cwd(), "public")));
+
+// Explicit uploads (optional but safe)
 app.use(
   "/assets/uploads",
-  express.static(path.join(__dirname, "../../public/assets/uploads"))
+  express.static(path.join(process.cwd(), "public", "assets", "uploads"))
 );
 
-
-// ✅ sessions
+/* =========================
+   SESSIONS
+========================= */
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "dev_secret_change_later",
@@ -69,35 +94,31 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-
-      // IMPORTANT:
-      // - If your frontend and backend are on different domains (Netlify + Render),
-      //   cookies must be SameSite=None; Secure=true
       sameSite: IS_PROD ? "none" : "lax",
-      secure: IS_PROD, // requires HTTPS (Netlify/Render are HTTPS)
+      secure: IS_PROD,
     },
   })
 );
 
-/* ---------- static frontend (optional) ----------
-   If you deploy frontend separately on Netlify,
-   you can keep this OR remove it — it won’t hurt.
-*/
-app.use(express.static(path.join(__dirname, "../../public")));
-
-/* ---------- API routes ---------- */
+/* =========================
+   API ROUTES
+========================= */
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/orders", orderRoutes);
 
-/* ---------- health check ---------- */
+/* =========================
+   HEALTH CHECK
+========================= */
 app.get("/api/health", (req, res) => {
   res.json({ ok: true });
 });
 
-/* ---------- start server ---------- */
+/* =========================
+   START SERVER
+========================= */
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

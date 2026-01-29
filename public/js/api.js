@@ -1,4 +1,4 @@
-const API_BASE = "https://neptune-backend.onrender.com"; // same origin (http://localhost:3001)
+const API_BASE = "https://neptune-backend.onrender.com";
 
 async function api(path, options = {}) {
   const res = await fetch(API_BASE + path, {

@@ -1,3 +1,4 @@
+// server/src/app.js
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
@@ -22,13 +23,18 @@ const app = express();
 ========================= */
 const IS_PROD = process.env.NODE_ENV === "production";
 
-// ✅ Put your Netlify URL here (and any custom domain later)
+// ✅ Allowed frontends
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:5173",
   "http://localhost:8080",
   "http://127.0.0.1:5500",
+
+  // Your current Netlify site (keep this)
   "https://genuine-liger-891219.netlify.app",
+
+  // If you later add a custom domain, add it here too:
+  // "https://yourcustomdomain.com",
 ];
 
 // ✅ Render is behind a proxy. Needed so secure cookies work.
@@ -36,20 +42,27 @@ app.set("trust proxy", 1);
 
 /* ---------- middleware (ORDER MATTERS) ---------- */
 
-// ✅ CORS: do NOT use origin:true in production
+// ✅ CORS (supports cookies)
 app.use(
   cors({
     origin: (origin, cb) => {
       // allow non-browser requests (curl, server-to-server)
       if (!origin) return cb(null, true);
 
+      // allow exact matches
       if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+
+      // ✅ allow ANY netlify.app subdomain (deploy previews, renamed sites, etc.)
+      if (/^https:\/\/[a-z0-9-]+\.netlify\.app$/.test(origin)) return cb(null, true);
 
       return cb(new Error(`CORS blocked for origin: ${origin}`));
     },
     credentials: true,
   })
 );
+
+// Optional but helpful: make preflight requests succeed everywhere
+app.options("*", cors({ credentials: true, origin: true }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -66,7 +79,7 @@ app.use(
   express.static(path.join(process.cwd(), "public", "assets", "uploads"))
 );
 
-// ✅ sessions
+/* ---------- sessions ---------- */
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "dev_secret_change_later",

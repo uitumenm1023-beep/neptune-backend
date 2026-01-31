@@ -1,4 +1,4 @@
-// src/app.js
+// server/src/app.js
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
@@ -32,14 +32,12 @@ const ALLOWED_ORIGINS = [
   "https://genuine-liger-891219.netlify.app",
 ];
 
-// Render is behind a proxy
+// Render is behind a proxy (needed for secure cookies)
 app.set("trust proxy", 1);
 
 /* =========================
    MIDDLEWARE
 ========================= */
-
-// ✅ CORS (NO app.options("*") — that breaks Node 22)
 app.use(
   cors({
     origin: (origin, cb) => {
@@ -48,9 +46,7 @@ app.use(
       if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
 
       // allow any Netlify preview domain
-      if (/^https:\/\/[a-z0-9-]+\.netlify\.app$/.test(origin)) {
-        return cb(null, true);
-      }
+      if (/^https:\/\/[a-z0-9-]+\.netlify\.app$/.test(origin)) return cb(null, true);
 
       return cb(new Error(`CORS blocked: ${origin}`));
     },
@@ -63,9 +59,9 @@ app.use(express.urlencoded({ extended: true }));
 
 /* =========================
    STATIC FILES
+   Your upload route saves to: public/assets/uploads
+   This makes /assets/uploads/... work publicly.
 ========================= */
-
-// Serve ALL public assets
 app.use(express.static(path.join(process.cwd(), "public")));
 
 /* =========================
@@ -73,13 +69,14 @@ app.use(express.static(path.join(process.cwd(), "public")));
 ========================= */
 app.use(
   session({
+    name: "sid",
     secret: process.env.SESSION_SECRET || "dev_secret_change_later",
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
       sameSite: IS_PROD ? "none" : "lax",
-      secure: IS_PROD,
+      secure: IS_PROD, // must be true for sameSite none
     },
   })
 );

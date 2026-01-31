@@ -2448,3 +2448,57 @@ body.intro-hidden #splineIntro{
 
 
 #splineIntro { cursor: pointer; }
+
+
+
+/* --- Fix category wall background images --- */
+.catwall {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.catcard {
+  position: relative;
+  display: block;
+  min-height: 320px;           /* important: gives the card height */
+  border-radius: 18px;
+  overflow: hidden;
+
+  background-image: var(--img); /* THIS uses your inline --img */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Optional: dark overlay so text is readable */
+.catcard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,0));
+}
+
+.catcard-bottom, .catcard-num {
+  position: relative; /* stay above overlay */
+  z-index: 1;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .catwall { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .catwall { grid-template-columns: 1fr; }
+}
+
+
+
+.catcard{
+  background-image: var(--img);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 320px;
+  border: none !important;
+}

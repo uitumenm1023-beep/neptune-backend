@@ -2508,104 +2508,64 @@ body.intro-hidden #splineIntro{
 /* =========================
    CATEGORY WALL (FINAL)
 ========================= */
+/* =========================
+   CATEGORY WALL (FORCE SHOW)
+========================= */
 .catwall{
   display:grid;
   grid-template-columns:repeat(4, minmax(0, 1fr));
-  gap:0;                /* no gaps, clean wall */
+  gap:0;
   margin:32px 0;
 }
 
 .catcard{
   position:relative;
   height:440px;
+  display:block;
   overflow:hidden;
-  text-decoration:none;
-  color:#fff;
-  isolation:isolate;
   border:0 !important;
+  color:#fff;
+  text-decoration:none;
 }
 
-/* image layer (THIS is the only place we use --img) */
-.catcard::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background-image:var(--img);
-  background-size:cover;
-  background-position:center;
-  background-repeat:no-repeat;
-  transform:scale(1.04);
-  transition: opacity .35s ease, transform .8s ease;
-  opacity:1; /* show image */
+/* Put image directly on the element (not pseudo-elements) */
+.catcard{
+  background-image: var(--img) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
 }
 
-/* dark overlay for readability */
+/* Dark overlay (doesn't replace image) */
 .catcard::after{
   content:"";
   position:absolute;
   inset:0;
-  background:rgba(0,0,0,.35);
-  transition: opacity .35s ease;
+  background:rgba(0,0,0,.25);
+  pointer-events:none;
+}
+
+.catcard-num,
+.catcard-bottom{
+  position:absolute;
+  z-index:2;
 }
 
 .catcard-num{
-  position:absolute;
   left:24px;
   top:24px;
   font-size:190px;
-  font-weight:600;
   line-height:1;
   letter-spacing:-.05em;
-  color:rgba(255,255,255,.20);
-  z-index:2;
-  transition: opacity .35s ease, transform .35s ease;
+  color:rgba(255,255,255,.22);
 }
 
 .catcard-bottom{
-  position:absolute;
   left:24px;
   right:24px;
   bottom:24px;
-  z-index:2;
-  opacity:.9;
-  transform:translateY(12px);
-  transition: opacity .35s ease, transform .35s ease;
 }
 
-.catcard-title{
-  margin-top:10px;
-  font-size:22px;
-  font-weight:650;
-}
-
-.catcard .pill{
-  display:inline-block;
-  padding:6px 10px;
-  border-radius:999px;
-  font-size:11px;
-  letter-spacing:.14em;
-  text-transform:uppercase;
-  border:1px solid rgba(255,255,255,.35);
-  background:rgba(0,0,0,.25);
-}
-
-/* hover */
-.catcard:hover::before{
-  transform:scale(1);
-}
-.catcard:hover::after{
-  opacity:.15;
-}
-.catcard:hover .catcard-num{
-  opacity:.15;
-  transform:translateY(-12px);
-}
-.catcard:hover .catcard-bottom{
-  opacity:1;
-  transform:translateY(0);
-}
-
-/* responsive */
 @media (max-width: 1000px){
   .catwall{ grid-template-columns:repeat(2,1fr); }
   .catcard{ height:360px; }
@@ -2614,4 +2574,58 @@ body.intro-hidden #splineIntro{
 @media (max-width: 520px){
   .catwall{ grid-template-columns:1fr; }
   .catcard{ height:320px; }
+}
+
+
+
+/* =========================
+   SPLINE INTRO (FINAL, WORKING)
+========================= */
+
+/* Fullscreen intro overlay */
+#splineIntro{
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
+  background: #000;
+  overflow: hidden;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity .35s ease, visibility .35s ease;
+}
+
+/* Spline fills intro */
+#splineIntro .spline-viewer{
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0 !important;
+  outline: 0 !important;
+}
+
+/* Hide intro when dismissed */
+body.intro-hidden #splineIntro{
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Your real page starts below the intro */
+#page{
+  position: relative;
+  z-index: 1;
+  margin-top: 100vh;
+}
+
+/* Once intro is hidden, remove the gap */
+body.intro-hidden #page{
+  margin-top: 0;
+}
+
+/* Menu button always clickable */
+.menu-btn{
+  z-index: 2001;
 }

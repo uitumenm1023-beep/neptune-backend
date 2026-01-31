@@ -1,123 +1,91 @@
 // public/js/shop.js
-// Clean catalog grid + search (?q=) + category filter (?cat=)
-// Requires: shop.html loads ./js/api.js BEFORE this file.
-
 const grid = document.getElementById("grid");
 const qInput = document.getElementById("q");
 
 const params = new URLSearchParams(window.location.search);
-const activeCategory = params.get("cat"); // e.g. "Shoes"
+const activeCategory = params.get("cat");
 const initialSearch = params.get("q") || "";
-
-const cartCountEl = document.getElementById("cartCount");
-
-function refreshCartCount() {
-  if (cartCountEl && typeof window.cartCountNumber === "function") {
-    cartCountEl.textContent = String(window.cartCountNumber());
-  }
-}
-document.addEventListener("DOMContentLoaded", refreshCartCount);
-
-let all = [];
-
-function dollars(cents) {
-  return (Number(cents) / 100).toFixed(2);
-}
+if (qInput) qInput.value = initialSearch;
 
 function escapeHtml(s) {
-  return String(s)
+  return String(s ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-
-// ✅ If image_url is "/assets/..", make it load from backend
+function dollarsFromCents(c) {
+  return (Number(c) / 100).toFixed(2);
+}
 function toAbsUrl(url) {
   if (!url) return "";
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  return (window.API_BASE || "") + url;
+  const clean = url.startsWith("/") ? url : "/" + url;
+  return (window.API_BASE || "") + clean;
+}
+function pickImage(p) {
+  return p?.image_url || (Array.isArray(p?.images) ? p.images[0] : "") || "";
 }
 
-function render(items) {
-  if (!grid) return;
+async function load() {
+  const products = await api("/api/products");
 
-  if (!items.length) {
-    grid.innerHTML = `<p class="sub">No products found.</p>`;
+  const q = (initialSearch || "").toLowerCase();
+
+  const filtered = products.filter((p) => {
+    const title = (p.title || "").toLowerCase();
+    const desc = (p.description || "").toLowerCase();
+    const matchQ = !q || title.includes(q) || desc.includes(q);
+
+    const matchCat =
+      !activeCategory ||
+      (p.category && String(p.category).toLowerCase() === String(activeCategory).toLowerCase());
+
+    return matchQ && matchCat;
+  });
+
+  grid.innerHTML = "";
+
+  if (!filtered.length) {
+    grid.innerHTML = `<p class="muted">No products found.</p>`;
     return;
   }
 
-  grid.innerHTML = items
-    .map((p) => {
-      const imgUrl = p.image_url ? toAbsUrl(p.image_url) : "";
-      const img = imgUrl
-        ? `<img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.title || "Product")}" loading="lazy" />`
-        : "";
+  for (const p of filtered) {
+    const imgUrl = toAbsUrl(pickImage(p));
 
-      return `
-        <a class="product-card" href="/product.html?id=${p.id}">
-          <div class="thumb">${img}</div>
-          <div class="p-body">
-            <div class="p-title">${escapeHtml(p.title || "Product")}</div>
-            <div class="p-meta">
-              <span>${escapeHtml(p.category || "Uncategorized")}</span>
-              <span class="p-price">$${dollars(p.price_cents || 0)}</span>
-            </div>
-          </div>
-        </a>
-      `;
-    })
-    .join("");
+    const card = document.createElement("a");
+    card.className = "product-card";
+    card.href = `/product.html?id=${encodeURIComponent(p.id)}`;
+
+    card.innerHTML = `
+      <div class="thumb">
+        ${imgUrl ? `<img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.title)}" loading="lazy">` : ""}
+      </div>
+      <div class="p-body">
+        <div class="p-title">${escapeHtml(p.title)}</div>
+        <div class="p-meta">
+          <span>${escapeHtml(p.category || "")}</span>
+          <span class="p-price">$${dollarsFromCents(p.price_cents)}</span>
+        </div>
+      </div>
+    `;
+
+    grid.appendChild(card);
+  }
 }
 
-function applyFilters() {
-  const term = (qInput?.value || "").trim().toLowerCase();
-  let items = all.slice();
+qInput?.addEventListener("keydown", (e) => {
+  if (e.key !== "Enter") return;
+  const q = qInput.value.trim();
+  const p = new URLSearchParams(window.location.search);
+  if (q) p.set("q", q);
+  else p.delete("q");
+  window.location.search = p.toString();
+});
 
-  if (activeCategory) {
-    items = items.filter(
-      (p) => (p.category || "").toLowerCase() === activeCategory.toLowerCase()
-    );
-  }
-
-  if (term) {
-    items = items.filter((p) => {
-      const t = (p.title || "").toLowerCase();
-      const d = (p.description || "").toLowerCase();
-      const c = (p.category || "").toLowerCase();
-      return t.includes(term) || d.includes(term) || c.includes(term);
-    });
-  }
-
-  render(items);
-}
-
-async function init() {
-  if (!grid) return;
-
-  if (!window.API_BASE) {
-    console.warn("window.API_BASE missing. Make sure api.js loads before shop.js");
-  }
-
-  if (qInput && initialSearch) qInput.value = initialSearch;
-
-  // products from backend
-  all = await api("/api/products");
-
-  all.sort((a, b) => {
-    const fa = a.is_featured ? 1 : 0;
-    const fb = b.is_featured ? 1 : 0;
-    if (fb !== fa) return fb - fa;
-    return (b.id || 0) - (a.id || 0);
-  });
-
-  applyFilters();
-
-  if (qInput) qInput.addEventListener("input", applyFilters);
-}
-
-init().catch((err) => {
+load().catch((err) => {
   console.error(err);
-  if (grid) grid.innerHTML = `<p class="sub">Failed to load products.</p>`;
+  grid.innerHTML = `<p class="muted">${escapeHtml(err.message)}</p>`;
 });

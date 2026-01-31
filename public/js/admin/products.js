@@ -28,6 +28,9 @@ let isUploading = false;
 let extraImage2 = "";
 let extraImage3 = "";
 
+/* =========================
+   HELPERS
+========================= */
 function centsFromDollars(d) {
   return Math.round(Number(d) * 100);
 }
@@ -35,19 +38,34 @@ function dollarsFromCents(c) {
   return (Number(c) / 100).toFixed(2);
 }
 function escapeHtml(s) {
-  return String(s)
+  return String(s ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-
-async function ensureAuth() {
-  try { await api("/api/auth/me"); }
-  catch { window.location.href = "/admin/login.html"; }
+function toAbsUrl(url) {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  const clean = url.startsWith("/") ? url : "/" + url;
+  return (window.API_BASE || "") + clean;
 }
 
+/* =========================
+   AUTH
+========================= */
+async function ensureAuth() {
+  try {
+    await api("/api/auth/me");
+  } catch {
+    window.location.href = "/admin/login.html";
+  }
+}
+
+/* =========================
+   CATEGORIES
+========================= */
 async function loadCategoriesIntoSelect() {
   try {
     const cats = await api("/api/categories");
@@ -63,6 +81,9 @@ async function loadCategoriesIntoSelect() {
   }
 }
 
+/* =========================
+   UPLOAD (FIXED)
+========================= */
 async function uploadOne(fileInput, statusEl, onDone) {
   const file = fileInput?.files?.[0];
   statusEl.textContent = "";
@@ -77,22 +98,27 @@ async function uploadOne(fileInput, statusEl, onDone) {
     statusEl.textContent = "Uploading...";
 
     const fd = new FormData();
-    fd.append("image", file); // IMPORTANT: field name must be "image"
+    fd.append("image", file); // backend expects "image"
 
-    const res = await fetch("/api/upload", {
+    // ✅ IMPORTANT FIX: use Render base URL, not Netlify
+    const res = await fetch((window.API_BASE || "") + "/api/upload", {
       method: "POST",
       credentials: "include",
       body: fd,
+      // do NOT set Content-Type for FormData
     });
 
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data?.error || `Upload failed (${res.status})`);
 
+    const imageUrl = data.imageUrl || data.url || "";
+    if (!imageUrl) throw new Error("Upload succeeded but no imageUrl returned");
+
     statusEl.textContent = "Uploaded ✅";
-    onDone?.(data.imageUrl);
-    return data.imageUrl;
+    onDone?.(imageUrl);
+    return imageUrl;
   } catch (err) {
-    statusEl.textContent = err.message;
+    statusEl.textContent = err.message || "Upload failed";
     return null;
   } finally {
     isUploading = false;
@@ -112,19 +138,30 @@ uploadBtn?.addEventListener("click", () =>
 );
 
 imageFile2?.addEventListener("change", () =>
-  uploadOne(imageFile2, uploadStatus2, (url) => { extraImage2 = url; })
+  uploadOne(imageFile2, uploadStatus2, (url) => {
+    extraImage2 = url;
+  })
 );
 uploadBtn2?.addEventListener("click", () =>
-  uploadOne(imageFile2, uploadStatus2, (url) => { extraImage2 = url; })
+  uploadOne(imageFile2, uploadStatus2, (url) => {
+    extraImage2 = url;
+  })
 );
 
 imageFile3?.addEventListener("change", () =>
-  uploadOne(imageFile3, uploadStatus3, (url) => { extraImage3 = url; })
+  uploadOne(imageFile3, uploadStatus3, (url) => {
+    extraImage3 = url;
+  })
 );
 uploadBtn3?.addEventListener("click", () =>
-  uploadOne(imageFile3, uploadStatus3, (url) => { extraImage3 = url; })
+  uploadOne(imageFile3, uploadStatus3, (url) => {
+    extraImage3 = url;
+  })
 );
 
+/* =========================
+   PRODUCTS LIST
+========================= */
 async function loadProducts() {
   const products = await api("/api/products");
   list.innerHTML = "";
@@ -137,13 +174,24 @@ async function loadProducts() {
   for (const p of products) {
     const el = document.createElement("div");
     el.className = "item";
+
+    const mainImageHref = p.image_url ? toAbsUrl(p.image_url) : "";
+
     el.innerHTML = `
       <div>
         <div class="item-title">${escapeHtml(p.title)}</div>
-        <div class="item-sub">$${dollarsFromCents(p.price_cents)} · ${escapeHtml(p.category || "Uncategorized")} · #${p.id}</div>
+        <div class="item-sub">$${dollarsFromCents(p.price_cents)} · ${escapeHtml(
+      p.category || "Uncategorized"
+    )} · #${p.id}</div>
         <div class="item-sub">
           ${p.is_featured ? "⭐ Featured" : ""}
-          ${p.image_url ? ` · <a class="link" href="${escapeHtml(p.image_url)}" target="_blank" rel="noreferrer">Main Image</a>` : ""}
+          ${
+            mainImageHref
+              ? ` · <a class="link" href="${escapeHtml(
+                  mainImageHref
+                )}" target="_blank" rel="noreferrer">Main Image</a>`
+              : ""
+          }
         </div>
       </div>
       <div class="item-actions">
@@ -161,11 +209,17 @@ async function loadProducts() {
   }
 }
 
+/* =========================
+   LOGOUT
+========================= */
 logoutBtn?.addEventListener("click", async () => {
   await api("/api/auth/logout", { method: "POST" });
   window.location.href = "/admin/login.html";
 });
 
+/* =========================
+   CREATE PRODUCT
+========================= */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   msg.textContent = "";
@@ -180,7 +234,7 @@ form.addEventListener("submit", async (e) => {
   const mainUrl = (fd.get("image_url") || "").trim();
   const sizes = (sizesInput.value || "")
     .split(",")
-    .map(s => s.trim())
+    .map((s) => s.trim())
     .filter(Boolean);
 
   const images = [mainUrl, extraImage2, extraImage3].filter(Boolean);
@@ -197,7 +251,7 @@ form.addEventListener("submit", async (e) => {
   }
 
   const payload = {
-    title: fd.get("title").trim(),
+    title: (fd.get("title") || "").trim(),
     price_cents: centsFromDollars(fd.get("price")),
     category_id: categorySelect.value ? Number(categorySelect.value) : null,
     is_featured: Number(fd.get("is_featured")) === 1,
@@ -207,20 +261,30 @@ form.addEventListener("submit", async (e) => {
     sizes,
   };
 
+  if (!payload.title) {
+    msg.textContent = "Title is required.";
+    return;
+  }
+
   try {
     await api("/api/products", { method: "POST", body: JSON.stringify(payload) });
+
     form.reset();
     uploadStatus.textContent = "";
     uploadStatus2.textContent = "";
     uploadStatus3.textContent = "";
     extraImage2 = "";
     extraImage3 = "";
+
     await loadProducts();
   } catch (err) {
     msg.textContent = err.message;
   }
 });
 
+/* =========================
+   INIT
+========================= */
 (async function init() {
   await ensureAuth();
   await loadCategoriesIntoSelect();

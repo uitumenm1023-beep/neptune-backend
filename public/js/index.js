@@ -1,32 +1,64 @@
-// public/js/index.js
-// --- SPLINE INTRO: hide when user scrolls down ---
-// SPLINE INTRO: overlay hides on scroll
+/* =========================
+   SPLINE INTRO (CLEAN)
+   - fullscreen on load
+   - dismisses once user scrolls intentionally
+========================= */
 (function () {
   const intro = document.getElementById("splineIntro");
   if (!intro) return;
 
-  function setHidden(hidden) {
-    document.body.classList.toggle("intro-hidden", hidden);
-    const hint = intro.querySelector(".scrollHint");
-    if (hint) hint.classList.toggle("hide", hidden);
+  let dismissed = false;
+
+  function dismiss() {
+    if (dismissed) return;
+    dismissed = true;
+    document.body.classList.add("intro-hidden");
   }
 
-  // show on load
-  setHidden(false);
-
-  // hide when user scrolls a bit
+  // dismiss after real scroll
   window.addEventListener(
     "scroll",
-    () => setHidden(window.scrollY > 10),
+    () => {
+      if (window.scrollY > 160) dismiss();
+    },
     { passive: true }
   );
 })();
 
+/* =========================
+   REVEAL ON SCROLL
+   - fixes invisible homepage
+========================= */
+(function () {
+  const els = Array.from(document.querySelectorAll(".reveal"));
+  if (!els.length) return;
 
+  const show = (el) => el.classList.add("show");
 
+  // fallback
+  if (!("IntersectionObserver" in window)) {
+    els.forEach(show);
+    return;
+  }
 
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          show(e.target);
+          io.unobserve(e.target);
+        }
+      }
+    },
+    { threshold: 0.12 }
+  );
 
+  els.forEach((el) => io.observe(el));
+})();
 
+/* =========================
+   BESTSELLERS SLIDER
+========================= */
 const track = document.getElementById("track");
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
@@ -39,15 +71,18 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 function dollarsFromCents(c) {
   return (Number(c) / 100).toFixed(2);
 }
+
 function toAbsUrl(url) {
   if (!url) return "";
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
   const clean = url.startsWith("/") ? url : "/" + url;
   return (window.API_BASE || "") + clean;
 }
+
 function pickImage(p) {
   return p?.image_url || (Array.isArray(p?.images) ? p.images[0] : "") || "";
 }
@@ -55,8 +90,10 @@ function pickImage(p) {
 let idx = 0;
 
 async function loadSlider() {
+  if (!track) return;
+
   const products = await api("/api/products");
-  const list = products.filter(p => p.is_featured).slice(0, 12);
+  const list = products.filter((p) => p.is_featured).slice(0, 12);
   const use = list.length ? list : products.slice(0, 12);
 
   track.innerHTML = "";
@@ -68,7 +105,13 @@ async function loadSlider() {
     a.href = `/product.html?id=${encodeURIComponent(p.id)}`;
     a.innerHTML = `
       <div class="bs-media">
-        ${img ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(p.title)}" loading="lazy">` : ""}
+        ${
+          img
+            ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(
+                p.title
+              )}" loading="lazy">`
+            : ""
+        }
         <div class="bs-grad"></div>
       </div>
       <div class="bs-info">
@@ -82,13 +125,17 @@ async function loadSlider() {
     track.appendChild(a);
   }
 
-  const slideWidth = 260 + 18; // width + gap
-  const render = () => (track.style.transform = `translateX(${-idx * slideWidth}px)`);
+  const slideWidth = 260 + 18;
+
+  function render() {
+    track.style.transform = `translateX(${-idx * slideWidth}px)`;
+  }
 
   prevBtn?.addEventListener("click", () => {
     idx = Math.max(0, idx - 1);
     render();
   });
+
   nextBtn?.addEventListener("click", () => {
     idx = Math.min(use.length - 1, idx + 1);
     render();

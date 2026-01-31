@@ -1,28 +1,27 @@
 // public/js/index.js
 // --- SPLINE INTRO: hide when user scrolls down ---
+// SPLINE INTRO: overlay hides on scroll
 (function () {
   const intro = document.getElementById("splineIntro");
-
   if (!intro) return;
 
-  function setIntroHidden(hidden) {
+  function setHidden(hidden) {
     document.body.classList.toggle("intro-hidden", hidden);
-    // also hide hint if you want
     const hint = intro.querySelector(".scrollHint");
     if (hint) hint.classList.toggle("hide", hidden);
   }
 
-  // start visible
-  setIntroHidden(false);
+  // show on load
+  setHidden(false);
 
-  // hide when scroll down even a little
-  function onScroll() {
-    setIntroHidden(window.scrollY > 10);
-  }
-
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
+  // hide when user scrolls a bit
+  window.addEventListener(
+    "scroll",
+    () => setHidden(window.scrollY > 10),
+    { passive: true }
+  );
 })();
+
 
 
 

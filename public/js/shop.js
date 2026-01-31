@@ -1,8 +1,6 @@
 // public/js/shop.js
 // Clean catalog grid + search (?q=) + category filter (?cat=)
-// Requires: shop.html has #grid and #q elements, and loads ./js/api.js before this file.
-
-const API_BASE = "https://neptune-backend.onrender.com"; // <-- CHANGE THIS
+// Requires: shop.html loads ./js/api.js BEFORE this file.
 
 const grid = document.getElementById("grid");
 const qInput = document.getElementById("q");
@@ -39,7 +37,7 @@ function escapeHtml(s) {
 function toAbsUrl(url) {
   if (!url) return "";
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  return API_BASE + url;
+  return (window.API_BASE || "") + url;
 }
 
 function render(items) {
@@ -75,7 +73,6 @@ function render(items) {
 
 function applyFilters() {
   const term = (qInput?.value || "").trim().toLowerCase();
-
   let items = all.slice();
 
   if (activeCategory) {
@@ -98,6 +95,10 @@ function applyFilters() {
 
 async function init() {
   if (!grid) return;
+
+  if (!window.API_BASE) {
+    console.warn("window.API_BASE missing. Make sure api.js loads before shop.js");
+  }
 
   if (qInput && initialSearch) qInput.value = initialSearch;
 
